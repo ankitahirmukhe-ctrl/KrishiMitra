@@ -1,8 +1,16 @@
 # 🌾 Krishi Mitra AI
 
+# 🌾 Krishi Mitra AI
+
 ## 🌱 What is Krishi Mitra AI?
 
-Krishi Mitra AI is a multilingual agriculture assistant designed to help farmers with simple, practical guidance on crops, fertilizers, pest control, and weather conditions. It uses AI to deliver easy-to-understand responses in **Marathi, Hindi, and English**, making it accessible and useful for farmers across different regions.
+Krishi Mitra AI is a **Virtual Sales Agent for Agriculture**, designed to assist farmers with intelligent, conversational guidance on crops, fertilizers, pest control, and weather-based decisions.
+
+Krishi Mitra AI acts as a virtual sales agent by not only answering farmer queries but also recommending relevant agricultural products like seeds and fertilizers in a conversational way, simulating a real advisor from an agri store.
+
+Unlike traditional chatbots, it acts as a **smart agri-sales assistant** that not only answers queries but also **recommends relevant agricultural products (like seeds, fertilizers, and solutions)** in a natural, human-like conversation.
+
+It uses AI to deliver easy-to-understand responses in **Marathi, Hindi, and English**, making it accessible for farmers across regions. With voice interaction and real-time responses, it simulates a **digital farming advisor + sales agent**, helping users make better and faster decisions.
 
 The system provides a conversational experience with voice input and speech output, allowing users to interact naturally and receive instant agricultural support.
 
