@@ -1,7 +1,5 @@
 # 🌾 Krishi Mitra AI
 
-# 🌾 Krishi Mitra AI
-
 ## 🌱 What is Krishi Mitra AI?
 
 Krishi Mitra AI is a **Virtual Sales Agent for Agriculture**, designed to assist farmers with intelligent, conversational guidance on crops, fertilizers, pest control, and weather-based decisions.
