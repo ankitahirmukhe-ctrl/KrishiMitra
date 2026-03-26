@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Krishi Mitra AI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="farmer-card">
+        <header class="nav-header">
+            <div class="avatar-group">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Krishi" class="bot-img">
+                <div><strong id="ui-title">कृषी मित्र</strong><p id="ai-status">Ready</p></div>
+            </div>
+            <div class="lang-switch">
+                <button onclick="updateLanguage('Marathi')" id="btn-mr">मराठी</button>
+                <button onclick="updateLanguage('Hindi')" id="btn-hi">हिंदी</button>
+                <button onclick="updateLanguage('English')" id="btn-en">English</button>
+            </div>
+        </header>
+        <div id="chatBox"></div>
+        <footer class="input-section">
+            <button class="mic-btn" onclick="startVoice()">🎤</button>
+            <input type="text" id="input">
+            <button class="send-btn" onclick="sendMessage()" id="ui-send">पाठवा</button>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+body { 
+    margin: 0; font-family: 'Poppins', sans-serif; background: #e8f5e9; 
+    display: flex; justify-content: center; align-items: center; height: 100vh;
+}
+.farmer-card {
+    width: 750px; height: 85vh; background: white; border-radius: 20px;
+    display: flex; flex-direction: column; box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    border: 2px solid #1b5e20; overflow: hidden;
+}
+.nav-header { background: #1b5e20; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+.avatar-group { display: flex; align-items: center; gap: 15px; }
+.bot-img { width: 50px; height: 50px; background: white; border-radius: 50%; padding: 3px; }
+.lang-switch button { background: rgba(255,255,255,0.1); border: 1px solid white; color: white; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-left: 5px; }
+.lang-switch button.active { background: white; color: #1b5e20; font-weight: bold; }
+#chatBox { flex: 1; overflow-y: auto; padding: 30px; background: #fafafa; display: flex; flex-direction: column; gap: 15px; }
+.user-msg { align-self: flex-end; background: #1b5e20; color: white; padding: 12px 20px; border-radius: 18px 18px 0 18px; max-width: 75%; }
+.bot-msg { align-self: flex-start; background: #fff; color: #333; padding: 15px 20px; border-radius: 0 18px 18px 18px; max-width: 85%; border: 1px solid #eee; line-height: 1.6; }
+.input-section { padding: 20px 30px; display: flex; gap: 10px; border-top: 1px solid #eee; }
+#input { flex: 1; padding: 12px 20px; border-radius: 30px; border: 2px solid #ddd; outline: none; }
+.mic-btn { background: #d32f2f; border: none; color: white; width: 50px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; }
+.send-btn { background: #1b5e20; border: none; color: white; padding: 0 25px; border-radius: 30px; cursor: pointer; font-weight: bold; }
