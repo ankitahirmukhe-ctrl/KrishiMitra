@@ -117,7 +117,7 @@ async function sendMessage() {
         // ✅ FIX: normalize language before sending
         const lang = (currentLang || "English").trim();
 
-        const response = await fetch("https://krushi-mitra-backend-sign.onrender.com/chat"), {
+        const response = await fetch("https://krushi-mitra-backend-sign.onrender.com/chat", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ 
