@@ -19,7 +19,7 @@ The system provides a conversational experience with voice input and speech outp
 * 🌐 Multilingual support (Marathi, Hindi, English)
 * 🎤 Voice input and speech output
 * 🌾 Smart crop recommendations based on queries
-* 🧪 Fertilizer suggestions with usage guidance
+* 🧪 Fertilizer suggestions 
 * 🐛 Pest and disease management advice
 * 🌦️ Weather-based farming tips
 * 💬 Conversational AI chat interface
@@ -36,12 +36,10 @@ The system provides a conversational experience with voice input and speech outp
 
 ---
 
-## 👥 Team
+## 👥 Team Details
 
-**CodeSync**
+* Ankita Hirmukhe
+* Falguni Firake
+* Anirudha Kashid
 
----
 
-## 🏆 About
-
-This project was developed as part of a hackathon to showcase how AI can empower farmers with accessible, real-time, and multilingual agricultural assistance.
