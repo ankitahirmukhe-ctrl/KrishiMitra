@@ -1,109 +1,150 @@
+// ===== STATE =====
 let currentLang = "Marathi";
-
 const sessionId = "session_" + Math.random().toString(36).slice(2, 10);
+let currentUser = null;
+
+// ===== SPEECH =====
 const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 const synth = window.speechSynthesis;
 
+// ===== UI STRINGS =====
 const ui = {
-    "English": { 
-        title: "Krishi Mitra", 
-        status: "Online", 
-        greet: "Hello, I am Krishi Mitra. What would you like to ask?", 
-        place: "Type or speak...", 
-        send: "Send" 
+    "English": {
+        title: "Krishi Mitra",
+        status: "Online",
+        greet: "Hello, I am Krishi Mitra. What would you like to ask?",
+        place: "Type or speak...",
+        send: "Send"
     },
-    "Marathi": { 
-        title: "कृषी मित्र", 
-        status: "सज्ज आहे", 
-        greet: "नमस्कार, मी कृषी मित्र आहे. तुम्हाला काय विचारायचे आहे?", 
-        place: "येथे बोला किंवा लिहा...", 
-        send: "पाठवा" 
+    "Marathi": {
+        title: "कृषी मित्र",
+        status: "सज्ज आहे",
+        greet: "नमस्कार, मी कृषी मित्र आहे. तुम्हाला काय विचारायचे आहे?",
+        place: "येथे बोला किंवा लिहा...",
+        send: "पाठवा"
     },
-    "Hindi": { 
-        title: "कृषि मित्र", 
-        status: "तैयार", 
-        greet: "नमस्ते, मैं कृषि मित्र हूँ। आप क्या पूछना चाहते हैं?", 
-        place: "यहाँ बोलें या लिखें...", 
-        send: "भेजें" 
+    "Hindi": {
+        title: "कृषि मित्र",
+        status: "तैयार",
+        greet: "नमस्ते, मैं कृषि मित्र हूँ। आप क्या पूछना चाहते हैं?",
+        place: "यहाँ बोलें या लिखें...",
+        send: "भेजें"
     }
 };
 
-// 🔢 Number localization
-const digitMap = {
-    '0': '०','1': '१','2': '२','3': '३','4': '४',
-    '5': '५','6': '६','7': '७','8': '८','9': '९'
-};
-
+// ===== NUMBER LOCALIZATION =====
+const digitMap = { '0':'०','1':'१','2':'२','3':'३','4':'४','5':'५','6':'६','7':'७','8':'८','9':'९' };
 function localizeNumbers(text, lang) {
     if (lang === 'English') return text;
     return text.replace(/[0-9]/g, d => digitMap[d]);
 }
 
-// 🧾 Format reply
+// ===== FORMAT REPLY =====
 function formatReply(text) {
     return text
         .split("\n")
         .filter(line => line.trim() !== "")
-        .map(line => `<p style="margin-bottom:10px;">${line}</p>`)
+        .map(line => `<p>${line}</p>`)
         .join("");
 }
 
-// 🔊 Speech (FIXED)
+// ===== CONSISTENT VOICE (FIX) =====
+// Force a single female Indian/Hindi voice for all languages
+// to keep voice consistent across Marathi, Hindi, English
+let chosenVoice = null;
+
+function pickConsistentVoice() {
+    const voices = synth.getVoices();
+    if (!voices.length) return null;
+
+    // Priority 1: Google हिन्दी (hi-IN) — available on Chrome, sounds natural for Devanagari
+    // Priority 2: Any hi-IN voice
+    // Priority 3: Any mr-IN voice
+    // Priority 4: Any en-IN female voice
+    // Priority 5: First available en voice
+    // We use the SAME voice for all three languages — only the text changes.
+
+    const pref = [
+        voices.find(v => v.name.includes("Google") && v.lang === "hi-IN"),
+        voices.find(v => v.lang === "hi-IN"),
+        voices.find(v => v.lang === "mr-IN"),
+        voices.find(v => v.lang === "en-IN"),
+        voices.find(v => v.lang.startsWith("en")),
+    ];
+
+    return pref.find(Boolean) || voices[0];
+}
+
 function speak(text) {
     if (synth.speaking) synth.cancel();
 
     const utter = new SpeechSynthesisUtterance(text);
-    let voices = synth.getVoices();
 
+    const voices = synth.getVoices();
     if (!voices.length) {
         setTimeout(() => speak(text), 200);
         return;
     }
 
-    let voice =
-        currentLang === "Marathi"
-            ? voices.find(v => v.lang === "mr-IN") || voices.find(v => v.lang.includes("hi")) || voices.find(v => v.lang.includes("en"))
-            : currentLang === "Hindi"
-            ? voices.find(v => v.lang.includes("hi")) || voices.find(v => v.lang.includes("en"))
-            : voices.find(v => v.lang.includes("en"));
+    // Pick once and cache
+    if (!chosenVoice) chosenVoice = pickConsistentVoice();
 
-    if (voice) {
-        utter.voice = voice;
-        utter.lang = voice.lang;
+    if (chosenVoice) {
+        utter.voice = chosenVoice;
+        // Always set lang to hi-IN so the engine processes Devanagari correctly
+        // regardless of whether it's Marathi or Hindi text
+        utter.lang = currentLang === "English" ? "en-IN" : chosenVoice.lang;
     }
 
+    utter.rate = 0.92;
+    utter.pitch = 1;
     synth.speak(utter);
 }
 
-// 🌐 Language update
+window.speechSynthesis.onvoiceschanged = () => {
+    chosenVoice = pickConsistentVoice(); // Re-cache when voices load
+};
+
+// ===== LANGUAGE UPDATE =====
 function updateLanguage(lang) {
     currentLang = lang;
 
+    // Update sidebar button states
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    const btnMap = { Marathi: 'btn-mr', Hindi: 'btn-hi', English: 'btn-en' };
+    document.getElementById(btnMap[lang])?.classList.add('active');
+
+    // Update UI text
     document.getElementById("ui-title").innerText = ui[lang].title;
     document.getElementById("ai-status").innerText = ui[lang].status;
+    document.getElementById("side-title").innerText = ui[lang].title;
+    document.getElementById("side-status").innerText = ui[lang].status === "Online" ? "Online" : ui[lang].status;
     document.getElementById("input").placeholder = ui[lang].place;
-    document.getElementById("ui-send").innerText = ui[lang].send;
+    document.getElementById("ui-send").innerHTML = `${ui[lang].send} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
 
     const chatBox = document.getElementById("chatBox");
     const greeting = localizeNumbers(ui[lang].greet, lang);
-
     chatBox.innerHTML += `<div class="bot-msg"><b>${ui[lang].title}:</b><p>${greeting}</p></div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
     speak(greeting);
 }
 
-// 🎤 Voice
+// ===== VOICE INPUT =====
 function startVoice() {
     recognition.lang = currentLang === "Marathi" ? "mr-IN" :
-                       currentLang === "Hindi" ? "hi-IN" : "en-IN";
+                       currentLang === "Hindi"   ? "hi-IN" : "en-IN";
     recognition.start();
+    document.querySelector('.mic-btn').classList.add('listening');
 }
 
 recognition.onresult = (e) => {
     document.getElementById("input").value = e.results[0][0].transcript;
+    document.querySelector('.mic-btn').classList.remove('listening');
     sendMessage();
 };
+recognition.onend = () => document.querySelector('.mic-btn').classList.remove('listening');
 
-// 🚀 MAIN FUNCTION (UPDATED - NO LOCATION / NO SHOPS)
+// ===== SEND MESSAGE =====
 async function sendMessage() {
     const input = document.getElementById("input");
     const chatBox = document.getElementById("chatBox");
@@ -113,52 +154,54 @@ async function sendMessage() {
     chatBox.innerHTML += `<div class="user-msg">${text}</div>`;
     input.value = "";
 
+    // Typing indicator
+    const typingId = "typing_" + Date.now();
+    chatBox.innerHTML += `
+        <div class="typing-msg" id="${typingId}">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+
     try {
-        // ✅ FIX: normalize language before sending
         const lang = (currentLang || "English").trim();
 
-        const response = await fetch("https://krushi-mitra-backend-sign.onrender.com/chat", {
+      const response = await fetch("http://localhost:3000/chat", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ 
-                message: text, 
-                language: lang,   // ✅ fixed
-                sessionId 
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: text, language: lang, sessionId })
         });
 
         const data = await response.json();
+        document.getElementById(typingId)?.remove();
 
         const reply = localizeNumbers(data.reply, currentLang);
         chatBox.innerHTML += `<div class="bot-msg"><b>${ui[currentLang].title}:</b>${formatReply(reply)}</div>`;
         speak(reply);
 
-        // 🌦️ WEATHER (ONLY ADVICE)
+        // Weather advice
         const weather = await getWeather(18.5204, 73.8567);
-
         if (weather) {
             const advice = getWeatherAdvice(weather);
+            const title = currentLang === "Hindi" ? "🌦️ मौसम सलाह" :
+                          currentLang === "English" ? "🌦️ Weather Advice" : "🌦️ हवामान सल्ला";
+            chatBox.innerHTML += `<div class="weather-msg"><b>${title}:</b> ${advice}</div>`;
 
-            let title =
-                currentLang === "Hindi" ? "🌦️ मौसम सलाह" :
-                currentLang === "English" ? "🌦️ Weather Advice" :
-                "🌦️ हवामान सल्ला";
-
-            chatBox.innerHTML += `
-                <div class="bot-msg">
-                    <b>${title}:</b>
-                    <p>${advice}</p>
-                </div>
-            `;
+            // Update topbar weather badge
+            document.getElementById("weatherBadge").innerText =
+                `${weather.temperature}°C · ${advice.split(".")[0]}`;
         }
 
     } catch {
-        chatBox.innerHTML += `<div class="bot-msg" style="color:red;">Error</div>`;
+        document.getElementById(typingId)?.remove();
+        chatBox.innerHTML += `<div class="bot-msg" style="color:#c0392b;">⚠️ Error connecting. Please try again.</div>`;
     }
 
     chatBox.scrollTop = chatBox.scrollHeight;
 }
-// 🌦️ WEATHER API
+
+// ===== WEATHER =====
 async function getWeather(lat, lon) {
     try {
         const res = await fetch(
@@ -166,39 +209,111 @@ async function getWeather(lat, lon) {
         );
         const data = await res.json();
         return data.current_weather;
-    } catch {
-        return null;
-    }
+    } catch { return null; }
 }
 
-// 🌾 WEATHER ADVICE (FIXED LOGIC)
 function getWeatherAdvice(w) {
     const t = w.temperature;
     const wind = w.windspeed;
 
     if (t >= 32) {
-        if (currentLang === "Hindi") return "तापमान अधिक है। सुबह या शाम पानी दें।";
-        if (currentLang === "English") return "High temperature. Water crops morning/evening.";
+        if (currentLang === "Hindi")   return "तापमान अधिक है। सुबह या शाम पानी दें।";
+        if (currentLang === "English") return "High temperature. Water crops in morning or evening.";
         return "तापमान जास्त आहे. सकाळी किंवा संध्याकाळी पाणी द्या.";
     }
-
     if (t <= 18) {
-        if (currentLang === "Hindi") return "तापमान कम है। फसल को सुरक्षित रखें।";
-        if (currentLang === "English") return "Low temperature. Protect crops.";
+        if (currentLang === "Hindi")   return "तापमान कम है। फसल को सुरक्षित रखें।";
+        if (currentLang === "English") return "Low temperature. Protect crops from cold.";
         return "तापमान कमी आहे. पिकांचे संरक्षण करा.";
     }
-
     if (wind >= 15) {
-        if (currentLang === "Hindi") return "हवा तेज है। फवारणी न करें।";
-        if (currentLang === "English") return "Strong wind. Avoid spraying.";
+        if (currentLang === "Hindi")   return "हवा तेज है। फवारणी न करें।";
+        if (currentLang === "English") return "Strong wind. Avoid spraying today.";
         return "वारा जास्त आहे. फवारणी टाळा.";
     }
-
-    if (currentLang === "Hindi") return "मौसम सामान्य है। खेती जारी रखें।";
-    if (currentLang === "English") return "Weather is moderate. Continue farming.";
+    if (currentLang === "Hindi")   return "मौसम सामान्य है। खेती जारी रखें।";
+    if (currentLang === "English") return "Weather is moderate. Continue farming normally.";
     return "हवामान सामान्य आहे. शेती सुरू ठेवा.";
 }
 
-// INIT
-window.onload = () => updateLanguage("Marathi");
-window.speechSynthesis.onvoiceschanged = () => synth.getVoices();
+// ===== AUTH — Simple localStorage-based =====
+
+function getUsers() {
+    return JSON.parse(localStorage.getItem("km_users") || "{}");
+}
+function saveUsers(users) {
+    localStorage.setItem("km_users", JSON.stringify(users));
+}
+
+function handleLogin() {
+    const email    = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const errEl    = document.getElementById("loginError");
+
+    if (!email || !password) { errEl.innerText = "Please fill in all fields."; return; }
+
+    const users = getUsers();
+    if (!users[email]) { errEl.innerText = "No account found. Please sign up."; return; }
+    if (users[email].password !== btoa(password)) { errEl.innerText = "Incorrect password."; return; }
+
+    errEl.innerText = "";
+    loginSuccess({ name: users[email].name, email });
+}
+
+function handleSignup() {
+    const name     = document.getElementById("signupName").value.trim();
+    const email    = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value;
+    const errEl    = document.getElementById("signupError");
+
+    if (!name || !email || !password) { errEl.innerText = "Please fill in all fields."; return; }
+    if (password.length < 6)          { errEl.innerText = "Password must be at least 6 characters."; return; }
+
+    const users = getUsers();
+    if (users[email]) { errEl.innerText = "Account already exists. Please login."; return; }
+
+    users[email] = { name, password: btoa(password) };
+    saveUsers(users);
+
+    errEl.innerText = "";
+    loginSuccess({ name, email });
+}
+
+function guestLogin() {
+    loginSuccess({ name: "Guest", email: "guest@krishi.ai" });
+}
+
+function loginSuccess(user) {
+    currentUser = user;
+    document.getElementById("authOverlay").classList.add("hidden");
+    document.getElementById("mainApp").classList.remove("hidden");
+
+    // Set user info in sidebar
+    document.getElementById("userDisplayName").innerText = user.name;
+    document.getElementById("userDisplayEmail").innerText = user.email;
+    document.getElementById("userAvatarIcon").innerText = user.name === "Guest" ? "👤" : user.name[0].toUpperCase();
+
+    // Init chat
+    updateLanguage("Marathi");
+}
+
+function handleLogout() {
+    currentUser = null;
+    document.getElementById("authOverlay").classList.remove("hidden");
+    document.getElementById("mainApp").classList.add("hidden");
+    document.getElementById("chatBox").innerHTML = "";
+    document.getElementById("loginEmail").value = "";
+    document.getElementById("loginPassword").value = "";
+    document.getElementById("loginError").innerText = "";
+    showLogin();
+}
+
+function showLogin() {
+    document.getElementById("loginForm").classList.add("active");
+    document.getElementById("signupForm").classList.remove("active");
+}
+
+function showSignup() {
+    document.getElementById("signupForm").classList.add("active");
+    document.getElementById("loginForm").classList.remove("active");
+}
