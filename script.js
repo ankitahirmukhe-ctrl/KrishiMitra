@@ -167,7 +167,7 @@ async function sendMessage() {
     try {
         const lang = (currentLang || "English").trim();
 
-      const response = await fetch("https://krushi-mitra-backend.onrender.com/chat", {
+      const response = await fetch("https://krishi-mitra-backend-dwrd.onrender.com/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: text, language: lang, sessionId })
