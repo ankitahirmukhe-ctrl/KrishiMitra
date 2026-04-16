@@ -1,16 +1,12 @@
 {
-  "name": "krishi-mitra-sales-agent",
+  "name": "farmer-chatbot",
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
-    "cors": "^2.8.6",
-    "dotenv": "^16.6.1",
-    "express": "^4.22.1",
-    "groq-sdk": "^1.1.1"
-  },
-  "scripts": {
-    "start": "node server.js"
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.2",
+    "groq-sdk": "^0.5.0"
   }
 }
